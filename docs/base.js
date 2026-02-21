@@ -1,0 +1,304 @@
+/* Base JS - Mobile-First App Shell
+ * Copyright (C) 2015-2026 Mark Constable <mc@netserva.org> (MIT License)
+ */
+if (typeof Base === 'undefined') {
+const Base = {
+    // All state in single localStorage key
+    key: 'base-state',
+
+    // Get/set persistent state
+    state(updates) {
+        const s = JSON.parse(localStorage.getItem(this.key) || '{}');
+        if (!updates) return s;
+        Object.assign(s, updates);
+        localStorage.setItem(this.key, JSON.stringify(s));
+        return s;
+    },
+
+    // Theme: toggle dark/light
+    toggleTheme() {
+        const html = document.documentElement;
+        const isDark = html.classList.contains('dark');
+        html.classList.replace(isDark ? 'dark' : 'light', isDark ? 'light' : 'dark');
+        this.state({ theme: isDark ? 'light' : 'dark' });
+        this.updateIcon();
+    },
+
+    // Update theme icon (sun/moon)
+    updateIcon() {
+        const btn = document.getElementById('theme-icon');
+        if (!btn) return;
+        const isDark = document.documentElement.classList.contains('dark');
+        btn.setAttribute('aria-label', isDark ? 'Light mode' : 'Dark mode');
+        const icon = btn.querySelector('[data-lucide], svg');
+        if (icon && typeof lucide !== 'undefined') {
+            const i = document.createElement('i');
+            i.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+            icon.replaceWith(i);
+            lucide.createIcons({ nodes: [i] });
+        } else if (!icon) {
+            btn.textContent = isDark ? '☀️' : '🌙';
+        }
+    },
+
+    // Carousel: set active panel
+    setPanelIndex(side, index) {
+        const sb = document.querySelector(`.sidebar-${side}`);
+        if (!sb) return;
+        const track = sb.querySelector('.carousel-track');
+        const dots = sb.querySelectorAll('.carousel-dot');
+        const panels = sb.querySelectorAll('.carousel-panel');
+        if (!track || !panels.length) return;
+        const len = panels.length;
+        index = ((index % len) + len) % len;
+        track.style.transform = `translateX(-${index * 100}%)`;
+        dots.forEach((d, i) => d.classList.toggle('active', i === index));
+        this.state({ [side + 'Panel']: index });
+    },
+
+    // Color scheme
+    setScheme(scheme) {
+        const html = document.documentElement;
+        ['stone', 'ocean', 'forest', 'sunset'].forEach(s => html.classList.remove('scheme-' + s));
+        if (scheme && scheme !== 'default') html.classList.add('scheme-' + scheme);
+        this.state({ scheme: scheme || 'default' });
+        document.querySelectorAll('[data-scheme]').forEach(el =>
+            el.classList.toggle('active', el.dataset.scheme === (scheme || 'default'))
+        );
+    },
+
+    // Toast notification
+    toast(msg, type = 'success', ms = 3000) {
+        document.querySelector('.toast')?.remove();
+        const t = document.createElement('div');
+        t.className = `toast toast-${type}`;
+        t.textContent = msg;
+        t.setAttribute('role', 'alert');
+        document.body.appendChild(t);
+        setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, ms);
+    },
+
+    // Sidebar: toggle open/close (independent per side)
+    toggleSidebar(side) {
+        const sb = document.querySelector(`.sidebar-${side}`);
+        if (!sb) return;
+        const opening = !sb.classList.contains('open');
+        if (opening) {
+            sb.classList.add('open');
+            document.body.classList.add('sidebar-open');
+            this.state({ [side + 'Open']: true });
+        } else {
+            sb.classList.remove('open', 'pinned');
+            document.body.classList.remove(side + '-pinned');
+            if (!document.querySelector('.sidebar.open')) document.body.classList.remove('sidebar-open');
+            this.state({ [side + 'Open']: false, [side + 'Pinned']: false });
+            // Reset pin icon to unpinned state
+            const icon = sb.querySelector('.pin-toggle [data-lucide], .pin-toggle svg');
+            if (icon && typeof lucide !== 'undefined') {
+                const i = document.createElement('i');
+                i.setAttribute('data-lucide', 'pin');
+                icon.replaceWith(i);
+                lucide.createIcons({ nodes: [i] });
+            }
+        }
+    },
+
+    // Sidebar: pin/unpin (desktop)
+    pinSidebar(side) {
+        const sb = document.querySelector(`.sidebar-${side}`);
+        if (!sb) return;
+        const pinning = !sb.classList.contains('pinned');
+        sb.classList.toggle('pinned', pinning);
+        sb.classList.toggle('open', pinning);
+        document.body.classList.toggle(side + '-pinned', pinning);
+        if (!pinning && !document.querySelector('.sidebar.open')) document.body.classList.remove('sidebar-open');
+        this.state({ [side + 'Pinned']: pinning, [side + 'Open']: pinning });
+        // Update pin icon
+        const icon = sb.querySelector('.pin-toggle [data-lucide], .pin-toggle svg');
+        if (icon && typeof lucide !== 'undefined') {
+            const i = document.createElement('i');
+            i.setAttribute('data-lucide', pinning ? 'pin-off' : 'pin');
+            icon.replaceWith(i);
+            lucide.createIcons({ nodes: [i] });
+        }
+    },
+
+    // Close all non-pinned sidebars
+    closeSidebars() {
+        document.querySelectorAll('.sidebar.open:not(.pinned)').forEach(s => s.classList.remove('open'));
+        if (!document.querySelector('.sidebar.pinned.open')) document.body.classList.remove('sidebar-open');
+        this.state({ leftOpen: false, rightOpen: false });
+    },
+
+    // Restore state on page load
+    restore() {
+        const s = this.state();
+        const desktop = window.innerWidth >= 1280;
+
+        ['left', 'right'].forEach(side => {
+            const sb = document.querySelector(`.sidebar-${side}`);
+            if (!sb) return;
+            const pinned = s[side + 'Pinned'] && desktop;
+            const open = pinned || (s[side + 'Open'] && desktop);
+            sb.classList.toggle('pinned', pinned);
+            sb.classList.toggle('open', open);
+            document.body.classList.toggle(side + '-pinned', pinned);
+            if (open) document.body.classList.add('sidebar-open');
+            // Set correct pin icon for both states
+            const icon = sb.querySelector('.pin-toggle [data-lucide], .pin-toggle svg');
+            if (icon) icon.setAttribute('data-lucide', pinned ? 'pin-off' : 'pin');
+        });
+
+        // Restore carousel panels
+        ['left', 'right'].forEach(side => {
+            const idx = s[side + 'Panel'] || 0;
+            if (idx) this.setPanelIndex(side, idx);
+        });
+    },
+
+    // Initialize
+    init() {
+        this.updateIcon();
+        this.restore();
+
+        // Scheme links
+        const s = this.state();
+        document.querySelectorAll('[data-scheme]').forEach(el =>
+            el.classList.toggle('active', el.dataset.scheme === (s.scheme || 'default'))
+        );
+
+        // Event delegation for clicks
+        document.addEventListener('click', e => {
+            const t = e.target;
+
+            // Theme toggle
+            if (t.closest('.theme-toggle')) { this.toggleTheme(); return; }
+
+            // Carousel navigation
+            const prevBtn = t.closest('.carousel-prev');
+            if (prevBtn) {
+                const side = prevBtn.closest('.sidebar-left') ? 'left' : 'right';
+                this.setPanelIndex(side, (this.state()[side + 'Panel'] || 0) - 1);
+                return;
+            }
+            const nextBtn = t.closest('.carousel-next');
+            if (nextBtn) {
+                const side = nextBtn.closest('.sidebar-left') ? 'left' : 'right';
+                this.setPanelIndex(side, (this.state()[side + 'Panel'] || 0) + 1);
+                return;
+            }
+            const dot = t.closest('.carousel-dot');
+            if (dot) {
+                const side = dot.closest('.sidebar-left') ? 'left' : 'right';
+                this.setPanelIndex(side, [...dot.parentElement.children].indexOf(dot));
+                return;
+            }
+
+            // TOC heading link
+            const headingLink = t.closest('[data-heading]');
+            if (headingLink) {
+                e.preventDefault();
+                const target = document.getElementById(headingLink.dataset.heading);
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
+            }
+
+            // Scheme selector
+            const scheme = t.closest('[data-scheme]');
+            if (scheme) { e.preventDefault(); this.setScheme(scheme.dataset.scheme); return; }
+
+            // Sidebar toggle
+            const menuBtn = t.closest('.menu-toggle[data-sidebar]');
+            if (menuBtn) { this.toggleSidebar(menuBtn.dataset.sidebar); return; }
+
+            // Pin toggle
+            const pinBtn = t.closest('.pin-toggle[data-sidebar]');
+            if (pinBtn) { this.pinSidebar(pinBtn.dataset.sidebar); return; }
+
+            // Overlay click
+            if (t.closest('.overlay')) { this.closeSidebars(); return; }
+
+            // Sidebar group toggle (collapsible)
+            const groupTitle = t.closest('.sidebar-group-title');
+            if (groupTitle) {
+                const group = groupTitle.closest('.sidebar-group');
+                group?.classList.toggle('collapsed');
+                return;
+            }
+
+            // Dropdown toggle
+            const dropToggle = t.closest('.dropdown-toggle');
+            if (dropToggle) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dd = dropToggle.closest('.dropdown');
+                document.querySelectorAll('.dropdown.open').forEach(d => d !== dd && d.classList.remove('open'));
+                dd?.classList.toggle('open');
+                return;
+            }
+
+            // Close dropdowns on outside click
+            if (!t.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown.open').forEach(d => d.classList.remove('open'));
+            }
+
+            // Close non-pinned sidebars on outside click
+            if (!t.closest('.sidebar') && !t.closest('.menu-toggle')) {
+                document.querySelectorAll('.sidebar.open:not(.pinned)').forEach(sb => sb.classList.remove('open'));
+                if (!document.querySelector('.sidebar.pinned.open')) document.body.classList.remove('sidebar-open');
+            }
+        });
+
+        // Escape key closes menus
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.dropdown.open').forEach(d => d.classList.remove('open'));
+                this.closeSidebars();
+            }
+        });
+
+        // System theme change
+        matchMedia('(prefers-color-scheme:dark)').addEventListener('change', e => {
+            if (!this.state().theme) {
+                document.documentElement.classList.replace(e.matches ? 'light' : 'dark', e.matches ? 'dark' : 'light');
+                this.updateIcon();
+            }
+        });
+
+        // Responsive: hide pinned sidebars when viewport shrinks to mobile
+        matchMedia('(min-width: 1280px)').addEventListener('change', e => {
+            if (!e.matches) {
+                // Viewport went below desktop - close all sidebars
+                document.querySelectorAll('.sidebar.open').forEach(sb => {
+                    sb.classList.remove('open', 'pinned');
+                });
+                document.body.classList.remove('left-pinned', 'right-pinned', 'sidebar-open');
+            } else {
+                // Viewport went to desktop - restore pinned state
+                this.restore();
+            }
+        });
+
+        // Lucide icons
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        // Scroll-driven sidebar borders
+        const onScroll = () => document.body.classList.toggle('scrolled', window.scrollY > 0);
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+
+        // Remove preload class to enable transitions (after state restored)
+        requestAnimationFrame(() => document.documentElement.classList.remove('preload'));
+    }
+};
+
+// Auto-init
+document.readyState === 'loading'
+    ? document.addEventListener('DOMContentLoaded', () => Base.init())
+    : Base.init();
+
+// Global exports
+window.Base = Base;
+window.showToast = (m, t) => Base.toast(m, t);
+window.toggleTheme = () => Base.toggleTheme();
+}

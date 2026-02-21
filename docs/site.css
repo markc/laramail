@@ -1,0 +1,295 @@
+/* ai4me Theme - OKLCH Color System (Crimson default)
+ * Extends base.css with ai4me-specific color schemes
+ * Copyright (C) 2015-2026 Mark Constable <mc@netserva.org> (MIT License)
+ */
+
+/* === Light Theme (Crimson - Default) === */
+:root {
+    /* Hue: 30 (true red) | Chroma: 0.2 (vibrant) */
+    --bg-primary:   oklch(98% 0.005 25);
+    --bg-secondary: oklch(96% 0.008 25);
+    --bg-tertiary:  oklch(92% 0.012 25);
+    --fg-primary:   oklch(25% 0.04 25);
+    --fg-secondary: oklch(40% 0.06 25);
+    --fg-muted:     oklch(55% 0.04 25);
+    --accent:       oklch(50.5% 0.197 30);
+    --accent-hover: oklch(45% 0.22 30);
+    --accent-fg:    oklch(98% 0.005 25);
+    --accent-subtle:oklch(92% 0.03 25);
+    --border:       oklch(85% 0.015 25);
+    --border-muted: oklch(90% 0.01 25);
+    --success:      oklch(45% 0.15 145);
+    --danger:       oklch(55% 0.2 25);
+    --warning:      oklch(70% 0.15 85);
+    --glass:        oklch(98% 0.005 25 / 0.8);
+    --glass-border: oklch(85% 0.015 25 / 0.5);
+}
+
+/* === Dark Theme (System Preference) === */
+@media (prefers-color-scheme: dark) {
+    :root:not(.light) {
+        --bg-primary:   oklch(12% 0.015 25);
+        --bg-secondary: oklch(16% 0.02 25);
+        --bg-tertiary:  oklch(22% 0.025 25);
+        --fg-primary:   oklch(95% 0.015 25);
+        --fg-secondary: oklch(75% 0.04 25);
+        --fg-muted:     oklch(55% 0.03 25);
+        --accent:       oklch(57% 0.221 30);
+        --accent-hover: oklch(63% 0.2 30);
+        --accent-fg:    oklch(15% 0.04 25);
+        --accent-subtle:oklch(25% 0.04 25);
+        --border:       oklch(30% 0.025 25);
+        --border-muted: oklch(22% 0.02 25);
+        --glass:        oklch(16% 0.02 25 / 0.85);
+        --glass-border: oklch(30% 0.025 25 / 0.5);
+        --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    }
+}
+
+/* === Dark Theme (Toggle Override) === */
+html.dark {
+    --bg-primary:   oklch(12% 0.015 25);
+    --bg-secondary: oklch(16% 0.02 25);
+    --bg-tertiary:  oklch(22% 0.025 25);
+    --fg-primary:   oklch(95% 0.015 25);
+    --fg-secondary: oklch(75% 0.04 25);
+    --fg-muted:     oklch(55% 0.03 25);
+    --accent:       oklch(57% 0.221 30);
+    --accent-hover: oklch(63% 0.2 30);
+    --accent-fg:    oklch(15% 0.04 25);
+    --accent-subtle:oklch(25% 0.04 25);
+    --border:       oklch(30% 0.025 25);
+    --border-muted: oklch(22% 0.02 25);
+    --glass:        oklch(16% 0.02 25 / 0.85);
+    --glass-border: oklch(30% 0.025 25 / 0.5);
+    --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+}
+
+/* === Stone (H=60) === */
+.scheme-stone:not(.dark) {
+    --bg-primary:   oklch(98% 0.005 60);
+    --bg-secondary: oklch(96% 0.008 60);
+    --bg-tertiary:  oklch(92% 0.012 60);
+    --fg-primary:   oklch(25% 0.02 60);
+    --fg-secondary: oklch(45% 0.02 60);
+    --fg-muted:     oklch(55% 0.015 60);
+    --accent:       oklch(45% 0.05 60);
+    --accent-hover: oklch(35% 0.06 60);
+    --accent-fg:    oklch(98% 0.005 60);
+    --accent-subtle:oklch(92% 0.015 60);
+    --border:       oklch(85% 0.01 60);
+    --border-muted: oklch(90% 0.008 60);
+    --glass:        oklch(98% 0.005 60 / 0.8);
+    --glass-border: oklch(85% 0.01 60 / 0.5);
+}
+.scheme-stone.dark {
+    --bg-primary:   oklch(12% 0.01 60);
+    --bg-secondary: oklch(16% 0.012 60);
+    --bg-tertiary:  oklch(22% 0.015 60);
+    --fg-primary:   oklch(95% 0.01 60);
+    --fg-secondary: oklch(75% 0.015 60);
+    --fg-muted:     oklch(55% 0.015 60);
+    --accent:       oklch(80% 0.03 60);
+    --accent-hover: oklch(90% 0.02 60);
+    --accent-fg:    oklch(20% 0.02 60);
+    --accent-subtle:oklch(25% 0.02 60);
+    --border:       oklch(30% 0.015 60);
+    --border-muted: oklch(22% 0.012 60);
+    --glass:        oklch(16% 0.012 60 / 0.85);
+    --glass-border: oklch(30% 0.015 60 / 0.5);
+}
+
+/* === Ocean (H=220) === */
+.scheme-ocean:not(.dark) {
+    --bg-primary:   oklch(98% 0.008 220);
+    --bg-secondary: oklch(96% 0.012 220);
+    --bg-tertiary:  oklch(92% 0.018 220);
+    --fg-primary:   oklch(25% 0.06 220);
+    --fg-secondary: oklch(40% 0.08 220);
+    --fg-muted:     oklch(50% 0.06 220);
+    --accent:       oklch(55% 0.12 220);
+    --accent-hover: oklch(60% 0.14 220);
+    --accent-fg:    oklch(98% 0.01 220);
+    --accent-subtle:oklch(92% 0.025 220);
+    --border:       oklch(85% 0.02 220);
+    --border-muted: oklch(90% 0.015 220);
+    --glass:        oklch(98% 0.008 220 / 0.8);
+    --glass-border: oklch(85% 0.02 220 / 0.5);
+}
+.scheme-ocean.dark {
+    --bg-primary:   oklch(12% 0.015 220);
+    --bg-secondary: oklch(16% 0.02 220);
+    --bg-tertiary:  oklch(22% 0.025 220);
+    --fg-primary:   oklch(95% 0.02 220);
+    --fg-secondary: oklch(75% 0.05 220);
+    --fg-muted:     oklch(55% 0.04 220);
+    --accent:       oklch(75% 0.12 220);
+    --accent-hover: oklch(85% 0.1 220);
+    --accent-fg:    oklch(15% 0.04 220);
+    --accent-subtle:oklch(25% 0.04 220);
+    --border:       oklch(30% 0.03 220);
+    --border-muted: oklch(22% 0.02 220);
+    --glass:        oklch(16% 0.02 220 / 0.85);
+    --glass-border: oklch(30% 0.03 220 / 0.5);
+}
+
+/* === Forest (H=150) === */
+.scheme-forest:not(.dark) {
+    --bg-primary:   oklch(98% 0.008 150);
+    --bg-secondary: oklch(96% 0.012 150);
+    --bg-tertiary:  oklch(92% 0.018 150);
+    --fg-primary:   oklch(25% 0.06 150);
+    --fg-secondary: oklch(40% 0.08 150);
+    --fg-muted:     oklch(50% 0.06 150);
+    --accent:       oklch(50% 0.12 150);
+    --accent-hover: oklch(55% 0.14 150);
+    --accent-fg:    oklch(98% 0.01 150);
+    --accent-subtle:oklch(92% 0.025 150);
+    --border:       oklch(85% 0.02 150);
+    --border-muted: oklch(90% 0.015 150);
+    --glass:        oklch(98% 0.008 150 / 0.8);
+    --glass-border: oklch(85% 0.02 150 / 0.5);
+}
+.scheme-forest.dark {
+    --bg-primary:   oklch(12% 0.015 150);
+    --bg-secondary: oklch(16% 0.02 150);
+    --bg-tertiary:  oklch(22% 0.025 150);
+    --fg-primary:   oklch(95% 0.02 150);
+    --fg-secondary: oklch(75% 0.05 150);
+    --fg-muted:     oklch(55% 0.04 150);
+    --accent:       oklch(70% 0.12 150);
+    --accent-hover: oklch(80% 0.1 150);
+    --accent-fg:    oklch(15% 0.04 150);
+    --accent-subtle:oklch(25% 0.04 150);
+    --border:       oklch(30% 0.03 150);
+    --border-muted: oklch(22% 0.02 150);
+    --glass:        oklch(16% 0.02 150 / 0.85);
+    --glass-border: oklch(30% 0.03 150 / 0.5);
+}
+
+/* === Sunset (H=45) === */
+.scheme-sunset:not(.dark) {
+    --bg-primary:   oklch(98% 0.01 45);
+    --bg-secondary: oklch(96% 0.015 45);
+    --bg-tertiary:  oklch(92% 0.02 45);
+    --fg-primary:   oklch(30% 0.08 45);
+    --fg-secondary: oklch(42% 0.1 45);
+    --fg-muted:     oklch(52% 0.08 45);
+    --accent:       oklch(60% 0.16 45);
+    --accent-hover: oklch(65% 0.18 45);
+    --accent-fg:    oklch(98% 0.01 45);
+    --accent-subtle:oklch(92% 0.03 45);
+    --border:       oklch(85% 0.025 45);
+    --border-muted: oklch(90% 0.02 45);
+    --glass:        oklch(98% 0.01 45 / 0.8);
+    --glass-border: oklch(85% 0.025 45 / 0.5);
+}
+.scheme-sunset.dark {
+    --bg-primary:   oklch(12% 0.02 45);
+    --bg-secondary: oklch(16% 0.025 45);
+    --bg-tertiary:  oklch(22% 0.03 45);
+    --fg-primary:   oklch(95% 0.025 45);
+    --fg-secondary: oklch(75% 0.06 45);
+    --fg-muted:     oklch(55% 0.05 45);
+    --accent:       oklch(72% 0.14 45);
+    --accent-hover: oklch(82% 0.12 45);
+    --accent-fg:    oklch(15% 0.05 45);
+    --accent-subtle:oklch(25% 0.05 45);
+    --border:       oklch(30% 0.035 45);
+    --border-muted: oklch(22% 0.025 45);
+    --glass:        oklch(16% 0.025 45 / 0.85);
+    --glass-border: oklch(30% 0.035 45 / 0.5);
+}
+
+/* === Layout overrides: non-fixed topnav, full-height sidebars === */
+.topnav {
+    position: static;
+    justify-content: center;
+    z-index: auto;
+}
+.sidebar {
+    top: 0;
+    height: 100vh;
+    height: 100dvh;
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+.sidebar-left { border-inline-end: 1px solid transparent; }
+.sidebar-right { border-inline-start: 1px solid transparent; }
+/* Inner-edge border: starts below carousel-header, extends full height on scroll */
+.sidebar-left::after,
+.sidebar-right::after {
+    content: '';
+    position: absolute;
+    top: var(--topnav-height);
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+    transition: top var(--transition-slow);
+}
+.sidebar-left::after { right: 0; }
+.sidebar-right::after { left: 0; }
+body.scrolled .sidebar-left::after,
+body.scrolled .sidebar-right::after { top: 0; }
+body.scrolled .sidebar-left { border-inline-end-color: var(--border); }
+body.scrolled .sidebar-right { border-inline-start-color: var(--border); }
+main {
+    margin-block-start: 0;
+}
+.hamburger {
+    display: block !important;
+    position: fixed;
+    z-index: 500;
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-xl);
+    color: var(--fg-primary);
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+.hamburger:hover { color: var(--accent); }
+.hamburger-left { top: var(--space-3); left: var(--space-3); }
+.hamburger-right { top: var(--space-3); right: var(--space-3); }
+/* Carousel header: pin + carousel-nav grouped next to hamburger */
+.sidebar-left .carousel-header {
+    justify-content: flex-start;
+    gap: var(--space-1);
+    padding-inline-start: 3.75rem; /* clear the floating hamburger */
+}
+.sidebar-right .carousel-header {
+    justify-content: flex-end;
+    gap: var(--space-1);
+    padding-inline-end: 3.75rem; /* clear the floating hamburger */
+}
+.carousel-header .pin-toggle {
+    display: block;
+    position: static;
+    transform: none;
+    font-size: var(--text-base);
+}
+.carousel-prev, .carousel-next {
+    font-size: 22px;
+}
+.carousel-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 5px;
+}
+.carousel-dot.active {
+    width: 24px;
+}
+
+/* === Chapter table (reused from SPE) === */
+.chapter-table { width: 100%; border-collapse: collapse; }
+.chapter-table td { padding: var(--space-3) var(--space-4); border-block-end: 1px solid var(--border); vertical-align: top; }
+.chapter-table tr:hover td { background: var(--bg-secondary); }
+.chapter-table a { color: var(--accent); }

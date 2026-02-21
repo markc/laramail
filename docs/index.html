@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ai4me Docs</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="base.css">
+    <link rel="stylesheet" href="site.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script>(function(){var s=JSON.parse(localStorage.getItem('base-state')||'{}'),t=s.theme,c=s.scheme,h=document.documentElement;h.className='preload '+(t||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))+(c&&c!=='default'&&c!=='crimson'?' scheme-'+c:'');})()</script>
+</head>
+<body>
+<nav class="topnav">
+    <h1><a class="brand" href="/"><span>ai4me</span></a></h1>
+</nav>
+<aside class="sidebar sidebar-left">
+    <div class="carousel-header">
+        <button class="pin-toggle" data-sidebar="left" title="Pin sidebar"><i data-lucide="pin"></i></button>
+        <div class="carousel-nav">
+            <button class="carousel-prev"><i data-lucide="chevron-left"></i></button>
+            <div class="carousel-dots">
+                <button class="carousel-dot active"></button>
+                <button class="carousel-dot"></button>
+            </div>
+            <button class="carousel-next"><i data-lucide="chevron-right"></i></button>
+        </div>
+    </div>
+    <div class="carousel-viewport">
+        <div class="carousel-track">
+            <div class="carousel-panel">
+                <nav>
+                    <a href="#README.md" data-path="README.md"><i data-lucide="home"></i> Overview</a>
+                    <a href="#architecture.md" data-path="architecture.md"><i data-lucide="layers"></i> Architecture</a>
+                    <a href="#components.md" data-path="components.md"><i data-lucide="component"></i> Components</a>
+                    <a href="#panels.md" data-path="panels.md"><i data-lucide="columns-3"></i> Panel Config</a>
+                    <a href="#theme-system.md" data-path="theme-system.md"><i data-lucide="palette"></i> Theme System</a>
+                </nav>
+            </div>
+            <div class="carousel-panel">
+                <div style="padding: var(--space-3)">
+                    <h3>About ai4me</h3>
+                    <p class="text-sm" style="margin-block: var(--space-2)">A Laravel 12 + React 19 application featuring dual carousel sidebars, AI chat with multi-provider LLM support, and reusable admin datatables.</p>
+                    <h4>Tech Stack</h4>
+                    <ul class="text-sm" style="list-style: disc; padding-inline-start: 1.5em">
+                        <li>Laravel 12 + Inertia 2</li>
+                        <li>React 19 + TypeScript</li>
+                        <li>Tailwind CSS 4</li>
+                        <li>Prism PHP for LLM</li>
+                        <li>SQLite + Vite 7</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</aside>
+<aside class="sidebar sidebar-right">
+    <div class="carousel-header">
+        <div class="carousel-nav">
+            <button class="carousel-prev"><i data-lucide="chevron-left"></i></button>
+            <div class="carousel-dots">
+                <button class="carousel-dot active"></button>
+                <button class="carousel-dot"></button>
+            </div>
+            <button class="carousel-next"><i data-lucide="chevron-right"></i></button>
+        </div>
+        <button class="pin-toggle" data-sidebar="right" title="Pin sidebar"><i data-lucide="pin"></i></button>
+    </div>
+    <div class="carousel-viewport">
+        <div class="carousel-track">
+            <div class="carousel-panel">
+                <nav>
+                    <a href="#" data-scheme="default"><i data-lucide="flame"></i> Crimson</a>
+                    <a href="#" data-scheme="stone"><i data-lucide="circle"></i> Stone</a>
+                    <a href="#" data-scheme="ocean"><i data-lucide="waves"></i> Ocean</a>
+                    <a href="#" data-scheme="forest"><i data-lucide="trees"></i> Forest</a>
+                    <a href="#" data-scheme="sunset"><i data-lucide="sunset"></i> Sunset</a>
+                    <div class="sidebar-divider"></div>
+                    <a href="#" onclick="Base.toggleTheme();return false"><i data-lucide="moon"></i> Toggle Theme</a>
+                </nav>
+            </div>
+            <div class="carousel-panel">
+                <nav id="toc-panel">
+                    <p class="text-muted text-sm" style="padding: var(--space-3)">Select a document to see its table of contents.</p>
+                </nav>
+            </div>
+        </div>
+    </div>
+</aside>
+<main id="content" class="prose">
+    <h1>ai4me Documentation</h1>
+    <p>Select a document from the sidebar to view its contents.</p>
+</main>
+<div class="overlay"></div>
+<button class="hamburger hamburger-left menu-toggle" data-sidebar="left"><i data-lucide="menu"></i></button>
+<button class="hamburger hamburger-right menu-toggle" data-sidebar="right"><i data-lucide="menu"></i></button>
+<script src="base.js"></script>
+<script src="md.js"></script>
+</body>
+</html>
