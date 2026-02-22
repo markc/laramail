@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-## Working Context
+## Logbook Pattern
 
 - `~/.gh/_notes.md` — current state summary (read at session start, update in place)
 - `~/.gh/_journal/` — dated operational logs (`YYYY-MM-DD.md`, append after completing work)
