@@ -16,9 +16,15 @@ class JmapService
     {
         $sessionUrl = config('jmap.jmap_session_url');
 
-        $response = Http::withBasicAuth($email, $password)
-            ->accept('application/json')
-            ->get($sessionUrl);
+        // Stalwart's internal directory uses the local part as the login name.
+        // Try the full email first; if 401, retry with just the username.
+        $username = $email;
+        $response = $this->jmapGet($sessionUrl, $username, $password);
+
+        if ($response->status() === 401 && str_contains($email, '@')) {
+            $username = strstr($email, '@', before_needle: true);
+            $response = $this->jmapGet($sessionUrl, $username, $password);
+        }
 
         if ($response->failed()) {
             throw new \RuntimeException('JMAP authentication failed: '.$response->status());
@@ -34,7 +40,7 @@ class JmapService
         $account = $session['accounts'][$primaryAccountId] ?? [];
 
         return [
-            'token' => base64_encode($email.':'.$password),
+            'token' => base64_encode($username.':'.$password),
             'accountId' => $primaryAccountId,
             'apiUrl' => $session['apiUrl'] ?? '',
             'downloadUrl' => $session['downloadUrl'] ?? '',
@@ -51,18 +57,44 @@ class JmapService
     public function getSession(string $token): array
     {
         $sessionUrl = config('jmap.jmap_session_url');
+        [$username, $password] = explode(':', base64_decode($token), 2);
 
-        $response = Http::withHeaders([
-            'Authorization' => 'Basic '.$token,
-        ])
-            ->accept('application/json')
-            ->get($sessionUrl);
+        $response = $this->jmapGet($sessionUrl, $username, $password);
 
         if ($response->failed()) {
             throw new \RuntimeException('Failed to fetch JMAP session: '.$response->status());
         }
 
         return $response->json();
+    }
+
+    /**
+     * GET a JMAP URL with Basic Auth, following redirects without dropping credentials.
+     */
+    private function jmapGet(string $url, string $username, string $password): Response
+    {
+        $response = Http::withBasicAuth($username, $password)
+            ->accept('application/json')
+            ->withOptions(['allow_redirects' => false])
+            ->get($url);
+
+        if ($response->status() === 307 || $response->status() === 302) {
+            $location = $response->header('Location');
+            if ($location) {
+                if (! str_starts_with($location, 'http')) {
+                    $parsed = parse_url($url);
+                    $location = $parsed['scheme'].'://'.$parsed['host']
+                        .(isset($parsed['port']) ? ':'.$parsed['port'] : '')
+                        .$location;
+                }
+
+                $response = Http::withBasicAuth($username, $password)
+                    ->accept('application/json')
+                    ->get($location);
+            }
+        }
+
+        return $response;
     }
 
     /**

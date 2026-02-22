@@ -1,8 +1,12 @@
+import { createCodePlugin } from '@streamdown/code';
 import { Paperclip, Download, Loader2 } from 'lucide-react';
+import { Streamdown } from 'streamdown';
 import { useEmailStore } from '@/stores/mail';
 import EmailHtmlRenderer from './email-html-renderer';
 import EmailActionBar from './email-action-bar';
 import type { EmailAddress, EmailBodyPart } from '@/types/mail';
+
+const codePlugin = createCodePlugin({ theme: 'github-dark' });
 
 function formatAddress(addr: EmailAddress): string {
     return addr.name ? `${addr.name} <${addr.email}>` : addr.email;
@@ -114,12 +118,20 @@ export default function EmailReader() {
                 </div>
             )}
 
-            {/* Body */}
+            {/* Body — prefer text/plain as markdown; fall back to HTML for rich emails */}
             <div className="flex-1 overflow-y-auto">
-                {htmlContent ? (
+                {textContent ? (
+                    <div className="prose prose-sm dark:prose-invert max-w-none p-4">
+                        <Streamdown
+                            mode="static"
+                            plugins={[codePlugin]}
+                            linkSafety={{ enabled: false }}
+                        >
+                            {textContent}
+                        </Streamdown>
+                    </div>
+                ) : htmlContent ? (
                     <EmailHtmlRenderer html={htmlContent} />
-                ) : textContent ? (
-                    <pre className="whitespace-pre-wrap p-4 text-sm">{textContent}</pre>
                 ) : (
                     <div className="flex items-center justify-center p-4 text-sm text-muted-foreground">
                         No content available

@@ -54,6 +54,77 @@ Key files: `panel-carousel.tsx`, `components/panels/`, `theme-context.tsx`
 - `ANTHROPIC_API_KEY` — required
 - `OPENAI_API_KEY`, `GEMINI_API_KEY` — optional providers
 
+## Shared Reverb WebSocket Server (Production)
+
+This project hosts the canonical shared Reverb instance for all Laravel projects on the mko server. One Reverb process serves multiple apps via app_key isolation.
+
+### How it works
+
+- **Service:** `laramail-reverb.service` runs `php artisan reverb:start --port=8080` from `/srv/mail.kanary.org/web/app/`
+- **App registry:** `/etc/reverb/apps.json` — each project gets its own `id`, `key`, `secret`, and `allowed_origins`
+- **Config:** `config/reverb.php` reads from `apps.json` at boot; falls back to env vars for local dev (no `apps.json` file)
+- **Caddy:** A `(websocket)` snippet in `/etc/caddy/Caddyfile` proxies `/app/*` to `127.0.0.1:8080`, imported by every vhost
+
+### Adding a new project to the shared Reverb
+
+1. **Generate credentials:**
+   ```bash
+   python3 -c "import secrets; print(secrets.token_hex(16)); print(secrets.token_hex(16))"
+   ```
+
+2. **Add entry to `/etc/reverb/apps.json`:**
+   ```json
+   {
+       "id": "myproject",
+       "key": "<generated-key>",
+       "secret": "<generated-secret>",
+       "allowed_origins": ["myproject.kanary.org"]
+   }
+   ```
+
+3. **Copy `config/reverb.php`** from this project to the new project (shared multi-tenant config).
+
+4. **Add env vars** to the new project's `.env`:
+   ```
+   BROADCAST_CONNECTION=reverb
+   REVERB_APP_ID=myproject
+   REVERB_APP_KEY=<generated-key>
+   REVERB_APP_SECRET=<generated-secret>
+   REVERB_HOST=mail.kanary.org
+   REVERB_PORT=8080
+   REVERB_SCHEME=https
+
+   VITE_REVERB_APP_KEY=${REVERB_APP_KEY}
+   VITE_REVERB_HOST=mail.kanary.org
+   VITE_REVERB_PORT=443
+   VITE_REVERB_SCHEME=https
+   ```
+
+5. **Add websocket proxy** to the project's Caddy vhost (if not already present):
+   ```
+   import websocket
+   ```
+
+6. **Guard `echo.ts`** — wrap the Echo instantiation in `if (reverbKey)` so it doesn't error when the key isn't set.
+
+7. **Restart Reverb** to pick up the new app:
+   ```bash
+   sudo systemctl restart laramail-reverb.service
+   ```
+
+8. **Rebuild frontend** if the project uses `VITE_REVERB_*` vars:
+   ```bash
+   bun ./node_modules/.bin/vite build
+   ```
+
+### Current registered apps
+
+| App ID | Domain | Project Path |
+|--------|--------|-------------|
+| laramail | mail.kanary.org | /srv/mail.kanary.org/web/app |
+| laraclaw | claw.kanary.org | /srv/claw.kanary.org/web/app |
+| laradav | dav.kanary.org | /srv/dav.kanary.org/web/app |
+
 ## Conventions
 
 - React components in `resources/js/components/`

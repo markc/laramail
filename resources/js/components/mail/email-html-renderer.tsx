@@ -47,6 +47,7 @@ export default function EmailHtmlRenderer({ html, blobBaseUrl = '/api/jmap/blob'
         font-size: 14px;
         line-height: 1.5;
         color: inherit;
+        background: transparent;
         word-wrap: break-word;
         overflow-wrap: break-word;
     }

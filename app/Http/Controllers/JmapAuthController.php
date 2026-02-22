@@ -36,9 +36,9 @@ class JmapAuthController extends Controller
 
         return response()->json([
             'accountId' => $result['accountId'],
-            'apiUrl' => $result['apiUrl'],
-            'downloadUrl' => $result['downloadUrl'],
-            'uploadUrl' => $result['uploadUrl'],
+            'apiUrl' => $this->proxyUrl($result['apiUrl']),
+            'downloadUrl' => $this->proxyUrl($result['downloadUrl']),
+            'uploadUrl' => $this->proxyUrl($result['uploadUrl']),
             'displayName' => $result['displayName'],
         ]);
     }
@@ -69,10 +69,20 @@ class JmapAuthController extends Controller
             'token' => $user->jmap_token_encrypted,
             'accountId' => $user->jmap_account_id,
             'displayName' => $user->jmap_display_name,
-            'apiUrl' => $session['apiUrl'] ?? '',
-            'downloadUrl' => $session['downloadUrl'] ?? '',
-            'uploadUrl' => $session['uploadUrl'] ?? '',
+            'apiUrl' => $this->proxyUrl($session['apiUrl'] ?? ''),
+            'downloadUrl' => $this->proxyUrl($session['downloadUrl'] ?? ''),
+            'uploadUrl' => $this->proxyUrl($session['uploadUrl'] ?? ''),
         ]);
+    }
+
+    /**
+     * Rewrite Stalwart URLs to go through the Caddy JMAP proxy on the same origin.
+     */
+    private function proxyUrl(string $url): string
+    {
+        $stalwartUrl = config('jmap.stalwart_url');
+
+        return $stalwartUrl ? str_replace($stalwartUrl, config('app.url'), $url) : $url;
     }
 
     /**

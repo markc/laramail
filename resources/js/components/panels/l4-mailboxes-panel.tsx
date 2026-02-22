@@ -1,7 +1,9 @@
 import { Archive, File, Inbox, Send, Star, Trash2, AlertTriangle, Folder, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
+import { usePage } from '@inertiajs/react';
 import { useMailboxStore, useSessionStore, useEmailStore } from '@/stores/mail';
 import type { MailboxNode, SpecialRole } from '@/types/mail';
+import type { SharedData } from '@/types';
 
 const roleIcons: Record<SpecialRole, typeof Inbox> = {
     inbox: Inbox,
@@ -79,6 +81,7 @@ export default function MailboxesPanel() {
     const specialMailboxes = useMailboxStore((s) => s.specialMailboxes);
     const isLoading = useMailboxStore((s) => s.isLoading);
     const session = useSessionStore((s) => s.session);
+    const { auth } = usePage<SharedData>().props;
 
     if (!session?.connected) {
         return (
@@ -106,6 +109,13 @@ export default function MailboxesPanel() {
 
     return (
         <nav className="flex flex-col py-2">
+            {/* Account display */}
+            {auth?.user?.email && (
+                <div className="px-3 pb-2 text-xs text-muted-foreground truncate">
+                    {auth.user.email}
+                </div>
+            )}
+
             {/* Special folders first */}
             {roleOrder.map((role) => {
                 const mb = specialMailboxes[role];

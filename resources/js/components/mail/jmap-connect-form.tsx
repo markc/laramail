@@ -40,7 +40,7 @@ export default function JmapConnectForm() {
                         </label>
                         <input
                             id="jmap-email"
-                            type="email"
+                            type="text"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required

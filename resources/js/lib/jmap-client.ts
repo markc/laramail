@@ -2,10 +2,24 @@ import { JamClient } from 'jmap-jam';
 import type { EmailAddress, EmailBodyPart, EmailFull, EmailListItem, JmapSession, MailboxNode } from '@/types/mail';
 
 export function createJamClient(session: JmapSession): JamClient {
-    return new JamClient({
+    const sessionUrl = session.apiUrl!.replace(/\/jmap\/$/, '/jmap/session');
+    const client = new JamClient({
         bearerToken: session.token!,
-        sessionUrl: session.apiUrl!.replace('/jmap/', '/.well-known/jmap'),
+        sessionUrl,
     });
+    // Stalwart uses Basic Auth — override the Bearer header jmap-jam sets
+    client.authHeader = `Basic ${session.token}`;
+    // Re-fetch session with correct auth, then rewrite Stalwart URLs to same-origin proxy
+    client.session = JamClient.loadSession(sessionUrl, client.authHeader).then((s) => {
+        const match = s.apiUrl.match(/^(https?:\/\/[^/]+)/);
+        if (!match) return s;
+        const stalwartOrigin = match[1];
+        const appOrigin = window.location.origin;
+        if (stalwartOrigin === appOrigin) return s;
+        const rewrite = (url: string) => url.replace(stalwartOrigin, appOrigin);
+        return { ...s, apiUrl: rewrite(s.apiUrl), downloadUrl: rewrite(s.downloadUrl), uploadUrl: rewrite(s.uploadUrl) };
+    });
+    return client;
 }
 
 const LIST_PROPERTIES = [
@@ -67,20 +81,23 @@ export async function fetchEmails(
 ): Promise<{ emails: EmailListItem[]; total: number; position: number }> {
     const { position = 0, limit = 50, sort = 'receivedAt' } = opts;
 
-    const [results] = await client.requestMany((b) => ({
-        query: b.Email.query({
+    const [results] = await client.requestMany((b) => {
+        const query = b.Email.query({
             accountId,
             filter: { inMailbox: mailboxId },
             sort: [{ property: sort, isAscending: false }],
             position,
             limit,
-        }),
-        get: b.Email.get({
-            accountId,
-            ids: results?.query.$ref('/ids') ?? null,
-            properties: [...LIST_PROPERTIES],
-        } as any),
-    }));
+        });
+        return {
+            query,
+            get: b.Email.get({
+                accountId,
+                ids: query.$ref('/ids'),
+                properties: [...LIST_PROPERTIES],
+            } as any),
+        };
+    });
 
     return {
         emails: (results.get as any).list as EmailListItem[],

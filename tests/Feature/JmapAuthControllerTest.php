@@ -105,7 +105,7 @@ class JmapAuthControllerTest extends TestCase
         ]);
 
         $this->user->update([
-            'jmap_token_encrypted' => 'test-token',
+            'jmap_token_encrypted' => base64_encode('testuser:secret'),
             'jmap_account_id' => 'abc123',
             'jmap_display_name' => 'Test User',
             'jmap_token_expires_at' => now()->addHour(),
@@ -132,7 +132,7 @@ class JmapAuthControllerTest extends TestCase
     public function test_session_returns_expired_when_token_expired(): void
     {
         $this->user->update([
-            'jmap_token_encrypted' => 'test-token',
+            'jmap_token_encrypted' => base64_encode('testuser:secret'),
             'jmap_account_id' => 'abc123',
             'jmap_token_expires_at' => now()->subHour(),
         ]);
@@ -147,7 +147,7 @@ class JmapAuthControllerTest extends TestCase
     {
         $this->user->update([
             'jmap_session_url' => 'https://mail.kanary.org/.well-known/jmap',
-            'jmap_token_encrypted' => 'test-token',
+            'jmap_token_encrypted' => base64_encode('testuser:secret'),
             'jmap_account_id' => 'abc123',
             'jmap_display_name' => 'Test User',
             'jmap_token_expires_at' => now()->addHour(),

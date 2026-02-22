@@ -17,7 +17,7 @@ class ConnectJmapRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email',
+            'email' => 'required|string|min:2',
             'password' => 'required|string',
         ];
     }
