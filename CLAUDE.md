@@ -1,13 +1,13 @@
 # CLAUDE.md
 
-## Journal
+## Working Context
 
-Read `~/.gh/journal.md` at session start — shared working log between Claude Code and Clawd (OpenClaw). Append updates when completing work.
+- `~/.gh/_notes.md` — current state summary (read at session start, update in place)
+- `~/.gh/_journal/` — dated operational logs (`YYYY-MM-DD.md`, append after completing work)
 
 ## Project Overview
 
-Laramail is a Laravel 12 + Inertia 2 + React 19 application featuring:
-- **JMAP Webmail** — Full email client for Stalwart Mail Server (RFC 8620/8621)
+ai4me is a Laravel 12 + Inertia 2 + React 19 application featuring:
 - **Dual Carousel Sidebars (DCS)** — Multi-panel sliding sidebars with glassmorphism
 - ChatGPT-style AI chat with multi-provider LLM support (Anthropic, OpenAI, Gemini)
 - Reusable admin datatables via TanStack Table
@@ -16,10 +16,6 @@ Laramail is a Laravel 12 + Inertia 2 + React 19 application featuring:
 
 - PHP 8.4+, Laravel 12, Inertia 2
 - React 19, TypeScript, Tailwind CSS 4
-- `jmap-jam` for browser-side JMAP client
-- `zustand` for mail state management
-- `dompurify` for email HTML sanitization
-- `@tanstack/react-virtual` for virtual-scrolled email list
 - Prism PHP (`prism-php/prism`) for LLM integration
 - `@laravel/stream-react` for SSE streaming
 - `streamdown` + `@streamdown/code` for markdown rendering
@@ -33,39 +29,15 @@ composer dev                # Start server + queue + logs + Vite
 npm run build               # Rebuild frontend assets
 php artisan migrate         # Run migrations
 php artisan migrate:fresh   # Reset database
-php artisan test --compact  # Run full test suite
 ```
 
 ## Architecture
 
-### JMAP Webmail (Hybrid)
-
-Email data lives exclusively in Stalwart — never in our database. Hybrid architecture:
-- **React (jmap-jam)** talks directly to Stalwart for reads (mailboxes, emails)
-- **Laravel** proxies auth (Basic Auth → encrypted token) and blob download/upload (browsers can't add auth headers to `<img>`/`<a>`)
-
-Key backend files:
-- `app/Services/JmapService.php` — PHP JMAP client (authenticate, getSession, downloadBlob, uploadBlob, call)
-- `app/Http/Controllers/JmapAuthController.php` — connect, session, disconnect
-- `app/Http/Controllers/JmapAttachmentController.php` — blob proxy
-- `app/Http/Controllers/MailController.php` — Inertia page
-- `app/Http/Middleware/EnsureJmapSession.php` — token validation
-- `config/jmap.php` — stalwart_url, poll_interval, token_ttl
-
-Key frontend files:
-- `resources/js/stores/mail/` — Zustand stores (session, mailbox, email, compose, ui)
-- `resources/js/lib/jmap-client.ts` — jmap-jam wrapper (fetchMailboxes, fetchEmails, sendEmail, etc.)
-- `resources/js/components/mail/` — email-list, email-reader, compose-panel, etc.
-- `resources/js/hooks/use-jmap-poll.ts` — 15s polling for new mail
-- `resources/js/hooks/use-mail-shortcuts.ts` — j/k/r/a/f/c/#/s/u keyboard shortcuts
-
-User model stores JMAP fields: `jmap_session_url`, `jmap_token_encrypted` (encrypted cast), `jmap_account_id`, `jmap_display_name`, `jmap_token_expires_at`.
-
 ### DCS Layout
 
-Each sidebar has panels navigable via `< [dot·dot] >` carousel controls:
-- **Left:** Navigation (0), Conversations (1), Docs (2), Mailboxes (3)
-- **Right:** Theme (0), Usage Stats (1), Notifications (2)
+Each sidebar has 2+ panels navigable via `< [dot·dot] >` carousel controls:
+- **Left:** Navigation (panel 0), Conversations (panel 1)
+- **Right:** Theme (panel 0), Usage Stats (panel 1)
 
 Key files: `panel-carousel.tsx`, `components/panels/`, `theme-context.tsx`
 
@@ -75,63 +47,42 @@ Key files: `panel-carousel.tsx`, `components/panels/`, `theme-context.tsx`
 
 ### Theme System
 
-5 OKLCH color schemes (crimson/stone/ocean/forest/sunset) + dark/light mode, persisted to `base-state` localStorage key. Panel indices also persisted. `clampPanel` supports 0–3 (4 left panels).
+5 OKLCH color schemes (crimson/stone/ocean/forest/sunset) + dark/light mode, persisted to `base-state` localStorage key. Panel indices also persisted.
 
 ## Environment
 
-- `STALWART_URL` — Stalwart Mail Server base URL
-- `JMAP_SESSION_URL` — JMAP well-known session endpoint
-- `ANTHROPIC_API_KEY` — required for AI chat
+- `ANTHROPIC_API_KEY` — required
 - `OPENAI_API_KEY`, `GEMINI_API_KEY` — optional providers
 
 ## Conventions
 
 - React components in `resources/js/components/`
-- Mail components in `resources/js/components/mail/`
 - Panel components in `resources/js/components/panels/`
 - Pages in `resources/js/pages/` (Inertia file-based routing)
-- Zustand stores in `resources/js/stores/mail/`
 - CSS custom properties in `resources/css/rentanet.css`
 - Theme state managed via ThemeContext + localStorage
-- Mail state managed via Zustand (optimistic updates, polling)
 - Docs in `docs/` (standalone SPA, GitHub Pages compatible)
-
-## Routes
-
-- `GET /mail` — Mail page (web, auth)
-- `POST /api/jmap/connect` — Authenticate with Stalwart
-- `GET /api/jmap/session` — Get JMAP session data for frontend
-- `POST /api/jmap/disconnect` — Clear JMAP session
-- `GET /api/jmap/blob/{blobId}/{name}` — Proxy attachment download
-- `POST /api/jmap/blob/upload` — Proxy attachment upload
 
 ## TODO
 
 ### Quick wins
-- [ ] Conversation search/filter in sidebar panel
-- [ ] Message editing/deletion
+- [ ] Conversation search/filter in sidebar panel (currently shows latest 50, no way to find older ones)
+- [ ] Message editing/deletion (no way to edit or remove individual messages)
 - [ ] Conversation renaming (edit title inline from sidebar)
 
 ### Medium effort
-- [ ] Email search (JMAP Email/query with text filter)
-- [ ] Email thread view (group by threadId)
-- [ ] Conversation folders/tags
-- [ ] Usage charts on dashboard
+- [ ] Usage charts on dashboard (trend lines for tokens/cost over time)
+- [ ] Conversation folders/tags (organize beyond a flat list)
 - [ ] User roles (admin vs regular user permissions)
 
 ### Bigger features
-- [ ] TipTap rich compose editor
-- [ ] Sieve filter management
-- [ ] Vacation responder
-- [ ] Contact autocomplete in compose
-- [ ] AI compose assist / email summarization
-- [ ] Drag-and-drop emails to folders
-- [ ] Conversation branching
-- [ ] API key management (per-user provider keys)
+- [ ] Conversation branching (fork from an earlier message)
+- [ ] Message pagination (currently loads all messages; will slow down for long conversations)
+- [ ] API key management (per-user provider keys instead of env-only)
 
 ## Documentation
 
-See `docs/` for full DCS pattern documentation. Viewable at `/laramail/docs/` via the unified dev server or GitHub Pages.
+See `docs/` for full DCS pattern documentation. Viewable at `/ai4me/docs/` via the unified dev server or GitHub Pages.
 
 ===
 
