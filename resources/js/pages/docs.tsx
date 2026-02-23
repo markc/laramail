@@ -1,5 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
-import { createCodePlugin } from '@streamdown/code';
+import { code } from '@streamdown/code';
 import { useLayoutEffect } from 'react';
 import { Streamdown } from 'streamdown';
 import { useTheme } from '@/contexts/theme-context';
@@ -24,7 +24,7 @@ export default function DocsPage() {
                     <div className="prose prose-sm dark:prose-invert max-w-none">
                         <Streamdown
                             mode="static"
-                            plugins={[createCodePlugin({ theme: 'github-dark' })]}
+                            plugins={{ code }}
                         >
                             {doc.content}
                         </Streamdown>

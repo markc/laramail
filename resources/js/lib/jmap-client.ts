@@ -9,15 +9,17 @@ export function createJamClient(session: JmapSession): JamClient {
     });
     // Stalwart uses Basic Auth — override the Bearer header jmap-jam sets
     client.authHeader = `Basic ${session.token}`;
-    // Re-fetch session with correct auth, then rewrite Stalwart URLs to same-origin proxy
+    // Fetch session via proxy, then rewrite Stalwart URLs to same-origin
     client.session = JamClient.loadSession(sessionUrl, client.authHeader).then((s) => {
-        const match = s.apiUrl.match(/^(https?:\/\/[^/]+)/);
-        if (!match) return s;
-        const stalwartOrigin = match[1];
         const appOrigin = window.location.origin;
-        if (stalwartOrigin === appOrigin) return s;
-        const rewrite = (url: string) => url.replace(stalwartOrigin, appOrigin);
-        return { ...s, apiUrl: rewrite(s.apiUrl), downloadUrl: rewrite(s.downloadUrl), uploadUrl: rewrite(s.uploadUrl) };
+        const rewrite = (url: string) => url.replace(/^https?:\/\/[^/]+/, appOrigin);
+        return {
+            ...s,
+            apiUrl: rewrite(s.apiUrl),
+            downloadUrl: rewrite(s.downloadUrl),
+            uploadUrl: rewrite(s.uploadUrl),
+            eventSourceUrl: rewrite(s.eventSourceUrl),
+        };
     });
     return client;
 }
@@ -184,6 +186,8 @@ export async function sendEmail(
         inReplyTo?: string[];
         references?: string[];
         attachments?: { blobId: string; name: string; type: string; size: number }[];
+        draftsMailboxId?: string;
+        identityId?: string;
     },
 ): Promise<void> {
     const bodyParts: EmailBodyPart[] = [];
@@ -210,7 +214,7 @@ export async function sendEmail(
         htmlBody: email.htmlBody ? [{ partId: 'html', type: 'text/html' }] : undefined,
         bodyValues,
         keywords: { $draft: true },
-        mailboxIds: {},
+        mailboxIds: email.draftsMailboxId ? { [email.draftsMailboxId]: true } : {},
     };
 
     if (email.inReplyTo) {
@@ -238,6 +242,7 @@ export async function sendEmail(
             create: {
                 sub: {
                     emailId: '#draft',
+                    identityId: email.identityId ?? null,
                     envelope: undefined,
                 } as any,
             },
@@ -248,6 +253,15 @@ export async function sendEmail(
             },
         } as any),
     }));
+}
+
+export async function fetchPrimaryIdentityId(client: JamClient, accountId: string): Promise<string | undefined> {
+    const [data] = await client.api.Identity.get({
+        accountId,
+        ids: null,
+    });
+    const list = (data as any).list as { id: string }[];
+    return list[0]?.id;
 }
 
 export function findMailboxByRole(mailboxes: MailboxNode[], role: string): MailboxNode | undefined {

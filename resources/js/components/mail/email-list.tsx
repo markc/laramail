@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Star, Paperclip } from 'lucide-react';
-import { useEmailStore, useSessionStore } from '@/stores/mail';
+import { Star, Paperclip, PenSquare } from 'lucide-react';
+import { useEmailStore, useSessionStore, useComposeStore } from '@/stores/mail';
 import type { EmailListItem } from '@/types/mail';
 
 function formatDate(dateStr: string): string {
@@ -84,6 +84,19 @@ function EmailRow({ email }: { email: EmailListItem }) {
     );
 }
 
+function ComposeButton() {
+    const openNew = useComposeStore((s) => s.openNew);
+    return (
+        <button
+            onClick={openNew}
+            className="flex items-center gap-1.5 rounded-md bg-[var(--scheme-accent)] px-2.5 py-1 text-xs font-medium text-[var(--scheme-accent-fg)] transition-colors hover:opacity-90"
+        >
+            <PenSquare className="h-3.5 w-3.5" />
+            Compose
+        </button>
+    );
+}
+
 export default function EmailList() {
     const parentRef = useRef<HTMLDivElement>(null);
     const emails = useEmailStore((s) => s.emails);
@@ -117,9 +130,12 @@ export default function EmailList() {
 
     return (
         <div className="flex flex-col overflow-hidden">
-            {/* Count bar */}
-            <div className="shrink-0 border-b border-border px-3 py-1.5 text-xs text-muted-foreground">
-                {total} email{total !== 1 ? 's' : ''}
+            {/* Count bar + Compose */}
+            <div className="flex shrink-0 items-center justify-between border-b border-border px-3 py-1.5">
+                <span className="text-xs text-muted-foreground">
+                    {total} email{total !== 1 ? 's' : ''}
+                </span>
+                <ComposeButton />
             </div>
 
             {/* Virtual list */}

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { JamClient } from 'jmap-jam';
-import { createJamClient } from '@/lib/jmap-client';
+import { createJamClient, fetchPrimaryIdentityId } from '@/lib/jmap-client';
 import type { JmapSession } from '@/types/mail';
 
 interface SessionState {
@@ -63,6 +63,18 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
             const client = createJamClient(session);
             set({ session, client, isConnecting: false });
+
+            // Fetch identity ID in background for compose
+            if (session.accountId) {
+                fetchPrimaryIdentityId(client, session.accountId)
+                    .then((identityId) => {
+                        if (identityId) {
+                            set((s) => ({ session: s.session ? { ...s.session, identityId } : s.session }));
+                        }
+                    })
+                    .catch(() => {});
+            }
+
             return true;
         } catch (e) {
             set({ isConnecting: false, error: 'Failed to load session' });

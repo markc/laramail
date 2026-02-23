@@ -36,10 +36,11 @@ class JmapAuthController extends Controller
 
         return response()->json([
             'accountId' => $result['accountId'],
+            'email' => $user->email,
             'apiUrl' => $this->proxyUrl($result['apiUrl']),
             'downloadUrl' => $this->proxyUrl($result['downloadUrl']),
             'uploadUrl' => $this->proxyUrl($result['uploadUrl']),
-            'displayName' => $result['displayName'],
+            'displayName' => $user->name ?: $result['displayName'],
         ]);
     }
 
@@ -68,7 +69,8 @@ class JmapAuthController extends Controller
             'connected' => true,
             'token' => $user->jmap_token_encrypted,
             'accountId' => $user->jmap_account_id,
-            'displayName' => $user->jmap_display_name,
+            'email' => $user->email,
+            'displayName' => $user->name ?: $user->jmap_display_name,
             'apiUrl' => $this->proxyUrl($session['apiUrl'] ?? ''),
             'downloadUrl' => $this->proxyUrl($session['downloadUrl'] ?? ''),
             'uploadUrl' => $this->proxyUrl($session['uploadUrl'] ?? ''),

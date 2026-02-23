@@ -119,7 +119,7 @@ export default function ComposePanel() {
 
     const from: EmailAddress = {
         name: session?.displayName ?? null,
-        email: session?.accountId ?? '',
+        email: session?.email ?? session?.accountId ?? '',
     };
 
     const handleSend = async () => {

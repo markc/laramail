@@ -3,7 +3,9 @@ export interface JmapSession {
     expired?: boolean;
     token?: string;
     accountId?: string;
+    email?: string;
     displayName?: string;
+    identityId?: string;
     apiUrl?: string;
     downloadUrl?: string;
     uploadUrl?: string;

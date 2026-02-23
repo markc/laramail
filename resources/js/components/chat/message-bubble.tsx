@@ -1,4 +1,4 @@
-import { createCodePlugin } from '@streamdown/code';
+import { code } from '@streamdown/code';
 import { FileText, Copy, Download, Check, RefreshCw, Pencil } from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { Streamdown } from 'streamdown';
@@ -226,8 +226,9 @@ export default function MessageBubble({ message, isStreaming = false, onEdit, on
                 <div>
                     <div className="prose prose-sm dark:prose-invert max-w-none">
                         <Streamdown
-                            mode={isStreaming ? 'typewriter' : 'static'}
-                            plugins={[createCodePlugin({ theme: 'github-dark' })]}
+                            mode={isStreaming ? 'streaming' : 'static'}
+                            isAnimating={isStreaming}
+                            plugins={{ code }}
                             linkSafety={{ enabled: false }}
                         >
                             {message.content}

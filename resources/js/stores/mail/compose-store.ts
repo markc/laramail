@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import type { JamClient } from 'jmap-jam';
 import { sendEmail } from '@/lib/jmap-client';
+import { useMailboxStore } from './mailbox-store';
+import { useSessionStore } from './session-store';
 import type { ComposeState, EmailAddress, EmailFull } from '@/types/mail';
 
 const emptyCompose: ComposeState = {
@@ -125,6 +127,8 @@ export const useComposeStore = create<ComposeStoreState>((set, get) => ({
         set({ isSending: true, error: null });
 
         try {
+            const draftsMailboxId = useMailboxStore.getState().specialMailboxes.drafts?.id;
+            const identityId = useSessionStore.getState().session?.identityId;
             await sendEmail(client, accountId, {
                 from: [from],
                 to: compose.to,
@@ -135,11 +139,24 @@ export const useComposeStore = create<ComposeStoreState>((set, get) => ({
                 inReplyTo: compose.inReplyTo ? [compose.inReplyTo] : undefined,
                 references: compose.references,
                 attachments: compose.attachments,
+                draftsMailboxId,
+                identityId,
             });
             set({ isSending: false, isOpen: false, compose: { ...emptyCompose } });
             return true;
         } catch (e) {
-            set({ isSending: false, error: 'Failed to send email' });
+            let msg: string;
+            if (e instanceof Error) {
+                msg = e.message;
+            } else if (typeof e === 'object' && e !== null) {
+                msg = (e as Record<string, unknown>).detail as string
+                    ?? (e as Record<string, unknown>).message as string
+                    ?? JSON.stringify(e);
+            } else {
+                msg = String(e);
+            }
+            console.error('Send email failed:', e);
+            set({ isSending: false, error: `Failed to send: ${msg}` });
             return false;
         }
     },
