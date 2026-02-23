@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { X, Send, Loader2, Paperclip, Plus, Minus } from 'lucide-react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { X, Send, Loader2, Paperclip, Plus, Minus, GripHorizontal } from 'lucide-react';
 import { useComposeStore, useSessionStore } from '@/stores/mail';
 import type { EmailAddress } from '@/types/mail';
 
@@ -64,6 +64,9 @@ function AddressInput({
     );
 }
 
+const MODAL_WIDTH = 640;
+const MODAL_DEFAULT_HEIGHT = 500;
+
 export default function ComposePanel() {
     const { isOpen, compose, isSending, error, updateCompose, send, close } = useComposeStore();
     const client = useSessionStore((s) => s.client);
@@ -71,7 +74,48 @@ export default function ComposePanel() {
     const [showCc, setShowCc] = useState(compose.cc.length > 0);
     const [showBcc, setShowBcc] = useState(compose.bcc.length > 0);
 
-    if (!isOpen) return null;
+    const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
+    const dragging = useRef(false);
+    const offset = useRef({ x: 0, y: 0 });
+    const modalRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (isOpen && !position) {
+            setPosition({
+                x: Math.max(0, (window.innerWidth - MODAL_WIDTH) / 2),
+                y: Math.max(0, window.innerHeight - MODAL_DEFAULT_HEIGHT - 20),
+            });
+        }
+        if (!isOpen) {
+            setPosition(null);
+        }
+    }, [isOpen]);
+
+    const handleDragStart = useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        if (!position) return;
+        dragging.current = true;
+        offset.current = { x: e.clientX - position.x, y: e.clientY - position.y };
+
+        const onMouseMove = (ev: MouseEvent) => {
+            if (!dragging.current) return;
+            const modalHeight = modalRef.current?.offsetHeight ?? MODAL_DEFAULT_HEIGHT;
+            const newX = Math.max(0, Math.min(window.innerWidth - MODAL_WIDTH, ev.clientX - offset.current.x));
+            const newY = Math.max(0, Math.min(window.innerHeight - modalHeight, ev.clientY - offset.current.y));
+            setPosition({ x: newX, y: newY });
+        };
+
+        const onMouseUp = () => {
+            dragging.current = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    }, [position]);
+
+    if (!isOpen || !position) return null;
 
     const from: EmailAddress = {
         name: session?.displayName ?? null,
@@ -122,28 +166,37 @@ export default function ComposePanel() {
     };
 
     return (
-        <div className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-2xl">
+        <div
+            ref={modalRef}
+            className="fixed z-40 w-full max-w-2xl"
+            style={{ left: position.x, top: position.y }}
+        >
             <div
-                className="flex flex-col rounded-t-xl shadow-2xl"
+                className="flex flex-col rounded-xl shadow-2xl"
                 style={{
                     background: 'var(--glass)',
                     backdropFilter: 'blur(20px)',
                     WebkitBackdropFilter: 'blur(20px)',
                     border: '1px solid var(--glass-border)',
-                    borderBottom: 'none',
                 }}
             >
-                {/* Header */}
-                <div className="flex items-center justify-between border-b border-border px-4 py-2">
-                    <h3 className="text-sm font-medium">
-                        {compose.replyType === 'reply'
-                            ? 'Reply'
-                            : compose.replyType === 'replyAll'
-                              ? 'Reply All'
-                              : compose.replyType === 'forward'
-                                ? 'Forward'
-                                : 'New Message'}
-                    </h3>
+                {/* Header — drag handle */}
+                <div
+                    onMouseDown={handleDragStart}
+                    className="flex cursor-move items-center justify-between border-b border-border px-4 py-2 select-none"
+                >
+                    <div className="flex items-center gap-2">
+                        <GripHorizontal className="h-4 w-4 text-muted-foreground" />
+                        <h3 className="text-sm font-medium">
+                            {compose.replyType === 'reply'
+                                ? 'Reply'
+                                : compose.replyType === 'replyAll'
+                                  ? 'Reply All'
+                                  : compose.replyType === 'forward'
+                                    ? 'Forward'
+                                    : 'New Message'}
+                        </h3>
+                    </div>
                     <button onClick={close} className="rounded p-1 hover:bg-muted">
                         <X className="h-4 w-4" />
                     </button>
