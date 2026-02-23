@@ -27,7 +27,7 @@ export default function JmapConnectForm() {
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--scheme-accent)]">
                         <Mail className="h-6 w-6 text-white" />
                     </div>
-                    <h2 className="text-lg font-semibold">Connect to Mail</h2>
+                    <h2 className="text-lg font-semibold">Mail Login</h2>
                     <p className="text-center text-sm text-muted-foreground">
                         Sign in to your Stalwart mail server
                     </p>
@@ -78,10 +78,10 @@ export default function JmapConnectForm() {
                         {isConnecting ? (
                             <>
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                Connecting...
+                                Logging in...
                             </>
                         ) : (
-                            'Connect'
+                            'Login'
                         )}
                     </button>
                 </form>

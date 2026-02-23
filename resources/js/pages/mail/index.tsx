@@ -58,12 +58,22 @@ export default function MailIndex() {
     useMailShortcuts();
 
     const isConnected = session?.connected;
+    const isConnecting = useSessionStore((s) => s.isConnecting);
 
     return (
         <>
             <Head title="Mail" />
             {!isConnected ? (
-                <JmapConnectForm />
+                hasJmapSession && (isConnecting || !session) ? (
+                    <div className="flex min-h-[calc(100vh-3rem)] items-center justify-center">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            Loading mail session...
+                        </div>
+                    </div>
+                ) : (
+                    <JmapConnectForm />
+                )
             ) : (
                 <>
                     <MailLayout

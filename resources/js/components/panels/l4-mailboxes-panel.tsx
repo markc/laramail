@@ -1,4 +1,4 @@
-import { Archive, File, Inbox, Send, Star, Trash2, AlertTriangle, Folder, ChevronRight } from 'lucide-react';
+import { Archive, File, Inbox, Send, Star, Trash2, AlertTriangle, Folder, ChevronRight, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { usePage } from '@inertiajs/react';
 import { useMailboxStore, useSessionStore, useEmailStore } from '@/stores/mail';
@@ -81,6 +81,7 @@ export default function MailboxesPanel() {
     const specialMailboxes = useMailboxStore((s) => s.specialMailboxes);
     const isLoading = useMailboxStore((s) => s.isLoading);
     const session = useSessionStore((s) => s.session);
+    const disconnect = useSessionStore((s) => s.disconnect);
     const { auth } = usePage<SharedData>().props;
 
     if (!session?.connected) {
@@ -109,10 +110,19 @@ export default function MailboxesPanel() {
 
     return (
         <nav className="flex flex-col py-2">
-            {/* Account display */}
+            {/* Account display + Logout */}
             {auth?.user?.email && (
-                <div className="px-3 pb-2 text-xs text-muted-foreground truncate">
-                    {auth.user.email}
+                <div className="flex items-center gap-1 px-3 pb-2">
+                    <span className="truncate flex-1 text-xs text-muted-foreground">
+                        {auth.user.email}
+                    </span>
+                    <button
+                        onClick={disconnect}
+                        title="Logout from mail"
+                        className="shrink-0 rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    >
+                        <LogOut className="h-3.5 w-3.5" />
+                    </button>
                 </div>
             )}
 
